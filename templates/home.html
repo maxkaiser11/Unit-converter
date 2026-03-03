@@ -1,0 +1,551 @@
+<!doctype html>
+<html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Unit Converter</title>
+        <link
+            href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Mono:wght@400;500&family=DM+Sans:wght@400;500;600&display=swap"
+            rel="stylesheet"
+        />
+        <style>
+            *,
+            *::before,
+            *::after {
+                box-sizing: border-box;
+                margin: 0;
+                padding: 0;
+            }
+            :root {
+                --bg: #f0ede8;
+                --card: #faf9f7;
+                --border: #1a1a1a;
+                --accent: #2a5cf6;
+                --text: #1a1a1a;
+                --muted: #888;
+            }
+            body {
+                font-family: "DM Sans", sans-serif;
+                background: var(--bg);
+                min-height: 100vh;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 2rem;
+            }
+            .wrapper {
+                display: grid;
+                grid-template-columns: 1fr 1fr;
+                gap: 1.5rem;
+                width: 100%;
+                max-width: 760px;
+            }
+            .card {
+                background: var(--card);
+                border: 2px solid var(--border);
+                border-radius: 12px;
+                padding: 2rem;
+                min-height: 460px;
+                display: flex;
+                flex-direction: column;
+            }
+            h1 {
+                font-family: "DM Serif Display", serif;
+                font-size: 2rem;
+                margin-bottom: 1.25rem;
+            }
+            .tabs {
+                display: flex;
+                gap: 1.5rem;
+                border-bottom: 1.5px solid #ddd;
+                margin-bottom: 1.75rem;
+            }
+            .tab {
+                font-weight: 600;
+                font-size: 0.95rem;
+                color: var(--muted);
+                cursor: pointer;
+                padding-bottom: 0.6rem;
+                border: none;
+                border-bottom: 2.5px solid transparent;
+                margin-bottom: -1.5px;
+                background: none;
+                transition:
+                    color 0.15s,
+                    border-color 0.15s;
+            }
+            .tab.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
+            .tab:hover:not(.active) {
+                color: var(--text);
+            }
+            .field {
+                margin-bottom: 1.1rem;
+            }
+            label {
+                display: block;
+                font-size: 0.875rem;
+                font-weight: 600;
+                margin-bottom: 0.4rem;
+            }
+            input,
+            select {
+                width: 100%;
+                height: 48px;
+                border: 2px solid var(--border);
+                border-radius: 8px;
+                padding: 0 0.875rem;
+                font-family: "DM Mono", monospace;
+                font-size: 0.9rem;
+                background: #fff;
+                outline: none;
+                appearance: none;
+                transition:
+                    border-color 0.15s,
+                    box-shadow 0.15s;
+            }
+            input:focus,
+            select:focus {
+                border-color: var(--accent);
+                box-shadow: 0 0 0 3px rgba(42, 92, 246, 0.12);
+            }
+            select {
+                background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' viewBox='0 0 12 8'%3E%3Cpath d='M1 1l5 5 5-5' stroke='%231a1a1a' stroke-width='1.8' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");
+                background-repeat: no-repeat;
+                background-position: right 0.875rem center;
+                cursor: pointer;
+            }
+            .btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                height: 48px;
+                padding: 0 1.75rem;
+                border: 2px solid var(--border);
+                border-radius: 8px;
+                font-family: "DM Sans", sans-serif;
+                font-size: 0.95rem;
+                font-weight: 600;
+                cursor: pointer;
+                transition:
+                    background 0.15s,
+                    transform 0.1s;
+                margin-top: 0.5rem;
+            }
+            .btn-primary {
+                background: var(--text);
+                color: #fff;
+                border-color: var(--text);
+            }
+            .btn-primary:hover {
+                background: #333;
+            }
+            .btn-primary:active {
+                transform: scale(0.98);
+            }
+            .btn-primary:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+            }
+            .btn-secondary {
+                background: #fff;
+                color: var(--text);
+            }
+            .btn-secondary:hover {
+                background: var(--bg);
+            }
+            .tab-panel {
+                display: none;
+            }
+            .tab-panel.active {
+                display: block;
+            }
+            .result-section {
+                display: none;
+                flex-direction: column;
+            }
+            .result-section.visible {
+                display: flex;
+            }
+            .result-label {
+                font-size: 0.875rem;
+                font-weight: 600;
+                color: var(--muted);
+                margin-bottom: 0.5rem;
+            }
+            .result-value {
+                font-family: "DM Serif Display", serif;
+                font-size: 2.4rem;
+                line-height: 1.2;
+                margin-bottom: 2rem;
+                word-break: break-word;
+            }
+            .result-value span {
+                color: var(--accent);
+            }
+            .empty-state {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                flex: 1;
+                color: var(--muted);
+                font-size: 0.9rem;
+                gap: 0.75rem;
+                padding-top: 2rem;
+            }
+            .empty-icon {
+                font-size: 2.5rem;
+                opacity: 0.3;
+            }
+            .error-msg {
+                font-size: 0.8rem;
+                color: #e53e3e;
+                margin-top: 0.3rem;
+                display: none;
+            }
+            .error-msg.visible {
+                display: block;
+            }
+            .api-error {
+                font-size: 0.8rem;
+                color: #e53e3e;
+                margin-top: 0.5rem;
+                display: none;
+            }
+            .api-error.visible {
+                display: block;
+            }
+            @media (max-width: 600px) {
+                .wrapper {
+                    grid-template-columns: 1fr;
+                }
+            }
+        </style>
+    </head>
+    <body>
+        <div class="wrapper">
+            <!-- Input Card -->
+            <div class="card">
+                <h1>Unit Converter</h1>
+                <div class="tabs">
+                    <button class="tab active" data-tab="length">Length</button>
+                    <button class="tab" data-tab="weight">Weight</button>
+                    <button class="tab" data-tab="temperature">
+                        Temperature
+                    </button>
+                </div>
+
+                <div class="tab-panel active" id="panel-length">
+                    <div class="field">
+                        <label>Enter the length to convert</label>
+                        <input
+                            type="number"
+                            id="length-value"
+                            placeholder="e.g. 20"
+                        />
+                        <div class="error-msg" id="length-error">
+                            Please enter a valid number.
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert from</label>
+                        <select id="length-from">
+                            <option value="m">Meters (m)</option>
+                            <option value="km">Kilometers (km)</option>
+                            <option value="cm">Centimeters (cm)</option>
+                            <option value="mm">Millimeters (mm)</option>
+                            <option value="ft" selected>Feet (ft)</option>
+                            <option value="in">Inches (in)</option>
+                            <option value="yd">Yards (yd)</option>
+                            <option value="mi">Miles (mi)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert to</label>
+                        <select id="length-to">
+                            <option value="m">Meters (m)</option>
+                            <option value="km">Kilometers (km)</option>
+                            <option value="cm" selected>
+                                Centimeters (cm)
+                            </option>
+                            <option value="mm">Millimeters (mm)</option>
+                            <option value="ft">Feet (ft)</option>
+                            <option value="in">Inches (in)</option>
+                            <option value="yd">Yards (yd)</option>
+                            <option value="mi">Miles (mi)</option>
+                        </select>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        id="btn-length"
+                        onclick="convert('length')"
+                    >
+                        Convert
+                    </button>
+                    <div class="api-error" id="api-error-length">
+                        Failed to reach API. Check your server is running.
+                    </div>
+                </div>
+
+                <div class="tab-panel" id="panel-weight">
+                    <div class="field">
+                        <label>Enter the weight to convert</label>
+                        <input
+                            type="number"
+                            id="weight-value"
+                            placeholder="e.g. 70"
+                        />
+                        <div class="error-msg" id="weight-error">
+                            Please enter a valid number.
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert from</label>
+                        <select id="weight-from">
+                            <option value="kg" selected>Kilograms (kg)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="lb">Pounds (lb)</option>
+                            <option value="oz">Ounces (oz)</option>
+                            <option value="t">Metric Tons (t)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert to</label>
+                        <select id="weight-to">
+                            <option value="kg">Kilograms (kg)</option>
+                            <option value="g">Grams (g)</option>
+                            <option value="lb" selected>Pounds (lb)</option>
+                            <option value="oz">Ounces (oz)</option>
+                            <option value="t">Metric Tons (t)</option>
+                        </select>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        id="btn-weight"
+                        onclick="convert('weight')"
+                    >
+                        Convert
+                    </button>
+                    <div class="api-error" id="api-error-weight">
+                        Failed to reach API. Check your server is running.
+                    </div>
+                </div>
+
+                <div class="tab-panel" id="panel-temperature">
+                    <div class="field">
+                        <label>Enter the temperature to convert</label>
+                        <input
+                            type="number"
+                            id="temp-value"
+                            placeholder="e.g. 100"
+                        />
+                        <div class="error-msg" id="temp-error">
+                            Please enter a valid number.
+                        </div>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert from</label>
+                        <select id="temp-from">
+                            <option value="c" selected>Celsius (°C)</option>
+                            <option value="f">Fahrenheit (°F)</option>
+                            <option value="k">Kelvin (K)</option>
+                        </select>
+                    </div>
+                    <div class="field">
+                        <label>Unit to Convert to</label>
+                        <select id="temp-to">
+                            <option value="c">Celsius (°C)</option>
+                            <option value="f" selected>Fahrenheit (°F)</option>
+                            <option value="k">Kelvin (K)</option>
+                        </select>
+                    </div>
+                    <button
+                        class="btn btn-primary"
+                        id="btn-temperature"
+                        onclick="convert('temperature')"
+                    >
+                        Convert
+                    </button>
+                    <div class="api-error" id="api-error-temperature">
+                        Failed to reach API. Check your server is running.
+                    </div>
+                </div>
+            </div>
+
+            <!-- Result Card -->
+            <div class="card">
+                <h1>Unit Converter</h1>
+                <div class="tabs">
+                    <button class="tab active" data-tab="length">Length</button>
+                    <button class="tab" data-tab="weight">Weight</button>
+                    <button class="tab" data-tab="temperature">
+                        Temperature
+                    </button>
+                </div>
+                <div class="result-section" id="result-output">
+                    <div class="result-label">Result of your calculation</div>
+                    <div class="result-value" id="result-text"></div>
+                    <button class="btn btn-secondary" onclick="resetAll()">
+                        Reset
+                    </button>
+                </div>
+                <div class="empty-state" id="result-empty">
+                    <div class="empty-icon">⇄</div>
+                    <div>Your result will appear here</div>
+                </div>
+            </div>
+        </div>
+
+        <script>
+            let activeTab = "length";
+            document.querySelectorAll(".tab").forEach((tab) => {
+                tab.addEventListener("click", () => {
+                    activeTab = tab.dataset.tab;
+                    document
+                        .querySelectorAll(".tab")
+                        .forEach((t) =>
+                            t.classList.toggle(
+                                "active",
+                                t.dataset.tab === activeTab,
+                            ),
+                        );
+                    document
+                        .querySelectorAll(".tab-panel")
+                        .forEach((p) =>
+                            p.classList.toggle(
+                                "active",
+                                p.id === `panel-${activeTab}`,
+                            ),
+                        );
+                    resetAll();
+                });
+            });
+
+            const lengthToM = {
+                m: 1,
+                km: 1000,
+                cm: 0.01,
+                mm: 0.001,
+                ft: 0.3048,
+                in: 0.0254,
+                yd: 0.9144,
+                mi: 1609.344,
+            };
+            const weightToKg = {
+                kg: 1,
+                g: 0.001,
+                lb: 0.453592,
+                oz: 0.0283495,
+                t: 1000,
+            };
+            const tempLabels = { c: "°C", f: "°F", k: "K" };
+
+            function roundSmart(n) {
+                if (Math.abs(n) >= 100) return Math.round(n * 10) / 10;
+                if (Math.abs(n) >= 1) return Math.round(n * 100) / 100;
+                return parseFloat(n.toPrecision(4));
+            }
+
+            async function convert(type) {
+                const prefix = type === "temperature" ? "temp" : type;
+                const val = parseFloat(
+                    document.getElementById(`${prefix}-value`).value,
+                );
+                const errEl = document.getElementById(`${prefix}-error`);
+                const apiErrEl = document.getElementById(`api-error-${type}`);
+                const btn = document.getElementById(`btn-${type}`);
+
+                errEl.classList.remove("visible");
+                apiErrEl.classList.remove("visible");
+
+                if (isNaN(val)) {
+                    errEl.classList.add("visible");
+                    return;
+                }
+
+                let fromUnit, toUnit;
+                if (type === "length") {
+                    fromUnit = document.getElementById("length-from").value;
+                    toUnit = document.getElementById("length-to").value;
+                } else if (type === "weight") {
+                    fromUnit = document.getElementById("weight-from").value;
+                    toUnit = document.getElementById("weight-to").value;
+                } else {
+                    fromUnit = document.getElementById("temp-from").value;
+                    toUnit = document.getElementById("temp-to").value;
+                }
+
+                // POST to API
+                btn.disabled = true;
+                btn.textContent = "Converting...";
+                try {
+                    await fetch("http://localhost:8080/api/convert", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            value: val,
+                            from: fromUnit,
+                            to: toUnit,
+                        }),
+                    });
+                } catch (err) {
+                    apiErrEl.classList.add("visible");
+                } finally {
+                    btn.disabled = false;
+                    btn.textContent = "Convert";
+                }
+
+                // Local calculation for display
+                let result;
+                if (type === "length") {
+                    result = (val * lengthToM[fromUnit]) / lengthToM[toUnit];
+                } else if (type === "weight") {
+                    result = (val * weightToKg[fromUnit]) / weightToKg[toUnit];
+                } else {
+                    let c =
+                        fromUnit === "c"
+                            ? val
+                            : fromUnit === "f"
+                              ? ((val - 32) * 5) / 9
+                              : val - 273.15;
+                    result =
+                        toUnit === "c"
+                            ? c
+                            : toUnit === "f"
+                              ? (c * 9) / 5 + 32
+                              : c + 273.15;
+                }
+
+                const fl =
+                    type === "temperature" ? tempLabels[fromUnit] : fromUnit;
+                const tl = type === "temperature" ? tempLabels[toUnit] : toUnit;
+                document.getElementById("result-text").innerHTML =
+                    `${val} ${fl} = <span>${roundSmart(result)} ${tl}</span>`;
+                document
+                    .getElementById("result-output")
+                    .classList.add("visible");
+                document.getElementById("result-empty").style.display = "none";
+            }
+
+            function resetAll() {
+                document
+                    .getElementById("result-output")
+                    .classList.remove("visible");
+                document.getElementById("result-empty").style.display = "flex";
+                ["length-value", "weight-value", "temp-value"].forEach((id) => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = "";
+                });
+                document
+                    .querySelectorAll(".error-msg")
+                    .forEach((e) => e.classList.remove("visible"));
+                document
+                    .querySelectorAll(".api-error")
+                    .forEach((e) => e.classList.remove("visible"));
+            }
+        </script>
+    </body>
+</html>

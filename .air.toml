@@ -1,0 +1,5 @@
+[build]
+  cmd = "go build -o ./tmp/main.exe ./cmd/main.go"
+  bin = "tmp/main.exe"
+  include_ext = ["go", "html", "tmpl"]
+  exclude_dir = ["tmp"]
